@@ -2,9 +2,9 @@
 
 error_reporting(E_ALL ^ (E_NOTICE | E_WARNING | E_DEPRECATED));
 
-function clean ($text)
+function removeLinks ($text)
 {
-	return str_replace('', '', $text);
+	return strip_tags($text, '<canvas><video><source><iframe><script><abbr><acronym><address><area><article><aside><b><big><blockquote><br><base><bdo><button><caption><cite><code><col><colgroup><dd><del><div><dfn><dl><dt><em><figure><figcaption><form><fieldset><hr><h1><h2><h3><h4><h5><h6><i><img><input><ins><label><legend><li><link><map><object><ol><optgroup><option><p><pre><param><q><section><select><small><span><strong><sub><sup><style><table><tbody><td><textarea><tfoot><th><thead><tr><tt><u><ul>');
 }
 
 if (	$_POST['source_host'] && 
@@ -75,11 +75,14 @@ if (	$_POST['source_host'] &&
 		// Create content
 		$text = $row['text'];
 
-		if ($_POST['import_image'])
+		if ($_POST['import_image'] == 1 && $row['singleSRC'] != '')
 		{
 			$text = '<div class="main-image"><img src="'.$row['singleSRC'].'" alt="'.$row['alt'].'"></div><div class="news-text">' . $text . '</div>';	
 		}				
 		$text = str_replace($_POST['source_image_path'], $_POST['target_image_path'], $text);
+
+		if ($_POST['remove_links']) $text = removeLinks($text);
+
 		$sql_content = 'INSERT INTO 
 					   		tl_content 
 					   	SET 
@@ -199,6 +202,9 @@ else
 				    	</label>
 				    	<label class="checkbox">
 				      	<input name="import_image" type="checkbox" value="1" checked="checked"> Import main image
+				    	</label>
+				    	<label class="checkbox">
+				      	<input name="remove_links" type="checkbox" value="1" checked="checked"> Remove links
 				    	</label>
 				    	<button type="submit" class="btn btn-large btn-primary">Import</button>
 				    </div>
